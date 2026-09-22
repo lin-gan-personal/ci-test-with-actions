@@ -7,7 +7,7 @@ import pytest
 
 # Project Modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-from calculations import area_of_circle, get_nth_fibonacci   # noqa: E402
+from calculations import area_of_circle, generate_two_random_reals, get_nth_fibonacci  # noqa: E402
 
 
 def test_area_of_circle_positive_radius():
@@ -87,3 +87,37 @@ def test_get_nth_fibonacci_negative_raises_value_error():
     # Act / Assert
     with pytest.raises(ValueError, match="n cannot be negative"):
         get_nth_fibonacci(n)
+
+
+def test_generate_two_random_reals_default_range(monkeypatch):
+    """Test default range produces two floats in [0.0, 1.0]."""
+    values = iter([0.1, 0.9])
+    calls = []
+
+    def fake_uniform(min_val, max_val):
+        calls.append((min_val, max_val))
+        return next(values)
+
+    monkeypatch.setattr("random.uniform", fake_uniform)
+
+    result = generate_two_random_reals()
+
+    assert result == (0.1, 0.9)
+    assert calls == [(0.0, 1.0), (0.0, 1.0)]
+
+
+def test_generate_two_random_reals_custom_range(monkeypatch):
+    """Test custom range uses the provided bounds."""
+    values = iter([2.5, 3.5])
+    calls = []
+
+    def fake_uniform(min_val, max_val):
+        calls.append((min_val, max_val))
+        return next(values)
+
+    monkeypatch.setattr("random.uniform", fake_uniform)
+
+    result = generate_two_random_reals(min_val=2.0, max_val=4.0)
+
+    assert result == (2.5, 3.5)
+    assert calls == [(2.0, 4.0), (2.0, 4.0)]
